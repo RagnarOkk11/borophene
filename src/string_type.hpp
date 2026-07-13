@@ -1,11 +1,23 @@
+//===----------------------------------------------------------------------===//
+//                         Borophene Storage Engine
+//
+// This file is heavily based on DuckDB's string_type.hpp.
+// Original source: https://github.com/duckdb/duckdb/blob/main/src/include/duckdb/common/types/string_type.hpp
+//
+// Copyright (c) 2018-2026 DuckDB Labs
+// Licensed under the MIT License.
+//
+// Modifications made for the Borophene project.
+//===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include <algorithm>
+#include <bit>
 #include <cstring>
 #include <limits>
 
 #include "assert.hpp"
-#include "bswap.hpp"
 #include "helper.hpp"
 #include "typedefs.hpp"
 
@@ -49,23 +61,23 @@ struct StringT {
   StringT(const std::string& value)  // NOLINT: Allow implicit conversion from `const char*`
       : StringT(value.c_str(), static_cast<uint32_t>(value.size())) {}
 
-  [[nodiscard]] bool IsInlined() const { return GetSize() <= kInlineLength; }
+  bool IsInlined() const { return GetSize() <= kInlineLength; }
 
-  [[nodiscard]] const char* GetData() const {
+  const char* GetData() const {
     return IsInlined() ? reinterpret_cast<const char*>(value_.inlined_.inlined_) : value_.pointer_.ptr_;
   }
-  [[nodiscard]] char* GetDataWriteable() const {
+  char* GetDataWriteable() const {
     return IsInlined() ? (char*)value_.inlined_.inlined_ : value_.pointer_.ptr_;  // NOLINT
   }
 
-  [[nodiscard]] const char* GetPrefix() const { return value_.inlined_.inlined_; }
+  const char* GetPrefix() const { return value_.inlined_.inlined_; }
   char* GetPrefixWriteable() { return value_.inlined_.inlined_; }
 
-  [[nodiscard]] uint32_t GetPrefixIntegerComparable() const {
-    return BSwapIfLE(Load<uint32_t>(reinterpret_cast<const_data_ptr_t>(GetPrefix())));
+  uint32_t GetPrefixIntegerComparable() const {
+    return std::byteswap(Load<uint32_t>(reinterpret_cast<const_data_ptr_t>(GetPrefix())));
   }
 
-  [[nodiscard]] idx_t GetSize() const { return value_.inlined_.length_; }
+  idx_t GetSize() const { return value_.inlined_.length_; }
 
   void SetSizeAndFinalize(uint32_t size, idx_t allocated_size) {
     value_.inlined_.length_ = size;
@@ -78,12 +90,12 @@ struct StringT {
     Finalize();
   }
 
-  [[nodiscard]] bool Empty() const { return value_.inlined_.length_ == 0; }
+  bool Empty() const { return value_.inlined_.length_ == 0; }
 
-  [[nodiscard]] std::string GetString() const { return std::string{GetData(), GetSize()}; }
+  std::string GetString() const { return std::string{GetData(), GetSize()}; }
   explicit operator std::string() const { return GetString(); }
 
-  [[nodiscard]] char* GetPointer() const {
+  char* GetPointer() const {
     ASSERT(!IsInlined());
     return value_.pointer_.ptr_;
   }
@@ -147,7 +159,7 @@ struct StringT {
       //	if the prefix is equal, the extra bytes are guaranteed to be /0 for the shorter one
 
       if (a_prefix != b_prefix) {
-        return BSwapIfLE(a_prefix) > BSwapIfLE(b_prefix);
+        return std::byteswap(a_prefix) > std::byteswap(b_prefix);
       }
 
       const int kMemcmpRes = memcmp(left.GetData(), right.GetData(), kMinLength);

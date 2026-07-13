@@ -4,6 +4,9 @@
 
 namespace borophene {
 
+static_assert(std::endian::native == std::endian::little,
+              "That engine supports only Little-Endian architectures");
+
 using idx_t = uint64_t;
 
 //! data pointers

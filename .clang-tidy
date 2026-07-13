@@ -17,6 +17,7 @@ Checks: >
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-union-access,
   -modernize-avoid-c-arrays,
+  -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -readability-identifier-length,
   -readability-magic-numbers,

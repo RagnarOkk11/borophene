@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 namespace borophene {
 
 template <typename T>
