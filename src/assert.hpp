@@ -20,18 +20,14 @@ inline void ThrowAssertError(const char* file, int line, const char* cond, const
 
 #define ASSERT(cond)                               \
   do {                                             \
-    if (cond) {                                    \
-      ((void)0);                                   \
-    } else {                                       \
+    if (!cond) {                                   \
       ThrowAssertError(__FILE__, __LINE__, #cond); \
     }                                              \
   } while (false)
 
 #define ASSERT_WITH_MESSAGE(cond, message)                    \
   do {                                                        \
-    if (cond) {                                               \
-      ((void)0);                                              \
-    } else {                                                  \
+    if (!cond) {                                              \
       ThrowAssertError(__FILE__, __LINE__, #cond, (message)); \
     }                                                         \
   } while (false)
